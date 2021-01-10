@@ -9,56 +9,37 @@ import SwiftUI
 
 public struct CalendarPickerView: View {
     
+    @Binding var showingSheet: Bool
+    
     private let todaysDate  = Date()
     private let todaysMonth = CalendarPickerView.Formatter.month.string(from: Date())
     
-    let delegate:((DayNode) -> Void)
-    
     private let dayHeaders = ["S","M","T","W","T","F","S"]
     
-    @State private var activeDate: Date
+    @Binding private var activeDate: Date
+    
     @State private var currentMonth: String
     @State private var currentCalendar = [[CalendarPickerView.DayNode]]()
     
-    init(withActiveDate activeDate: Date, dateTappedBlock: @escaping ((DayNode) -> Void)) {
-        self.delegate         = dateTappedBlock
-        self._activeDate      = State(initialValue: activeDate)
-        self._currentMonth    = State(initialValue: CalendarPickerView.Formatter.monthYear.string(from: activeDate))
-        self._currentCalendar = State(initialValue: getCalendarMonth(withStartDate: activeDate))
+    init(withActiveDate activeDate: Binding<Date>, showingSheet: Binding<Bool>) {
+        
+        self._showingSheet    = showingSheet
+        self._activeDate      = activeDate
+        
+        self._currentMonth    = State(initialValue: CalendarPickerView.Formatter.monthYear.string(from: activeDate.wrappedValue))
+        self._currentCalendar = State(initialValue: getCalendarMonth(withStartDate: activeDate.wrappedValue))
     }
     
     public var body: some View {
         
         NavigationView(content: {
             VStack {
-                /*
-                HStack {
-                    Button(action: {
-                        self.traverseDate(monthDelta: -1)
-                    }, label: {
-                        Image(systemName: "chevron.left.circle")
-                    })
-                    .buttonStyle(PlainButtonStyle())
-                    
-                    Spacer()
-                    
-                    Text(self.currentMonth)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    
-                    Spacer()
-                    Button(action: {
-                        self.traverseDate(monthDelta: 1)
-                    }, label: {
-                        Image(systemName: "chevron.right.circle")
-                    })
-                    .buttonStyle(PlainButtonStyle())
-                }
-                */
+                
                 Spacer(minLength: 8)
-
                 VStack {
                     
                     VStack{
+                        // MARK: - Day of Week Header
                         HStack {
                             ForEach (dayHeaders, id: \.self) {
                                 Text($0)
@@ -67,15 +48,21 @@ public struct CalendarPickerView: View {
                                     .frame(minWidth: 0, maxWidth: .infinity)
                             }
                         }
+                        
                         Divider().background(Color.gray.opacity(0.8))
                             .padding(.bottom, 1)
+                        
                         ScrollView {
                             ForEach(self.currentCalendar, id: \.self) { currentRow in
                                 HStack {
+                                    // MARK: - Present Each Date Button
                                     ForEach(currentRow, id: \.self) { currentDayNode in
                                         Button {
-                                            self.delegate(currentDayNode)
+                                            // MARK: - Date Selection & Dismissal
+                                            self.activeDate   = currentDayNode.date
+                                            self.showingSheet = false
                                         } label: {
+                                            
                                             Text("\(currentDayNode.day)")
                                                 .font(.system(size: 14, weight: .semibold, design: .rounded))
                                                 .foregroundColor(textColor(forNode: currentDayNode))
@@ -152,7 +139,6 @@ public struct CalendarPickerView: View {
         return tempCurrentCalendar
     }
     
-    
     /// Change the showing date of the calendar
     ///
     /// - Parameter monthDelta: **Int** the delta from the current month that you want to change
@@ -174,22 +160,12 @@ public struct CalendarPickerView: View {
 
 extension CalendarPickerView {
     
-    /// Get the background color for the current DayNode. This is
+    /// Get the text color for the current DayNode. This is
     /// determined based off of if it's today or if it's in the current month or not
     ///
-    /// - Parameter targetNode: **DayNode** the node whos background is being determined
+    /// - Parameter targetNode: **DayNode** the node whos text color is being determined
     ///
     /// - Returns: **Color**
-    private func background(forNode targetNode: DayNode) -> Color {
-        
-        if Calendar.current.isDateInToday(targetNode.date) {
-            return Color(#colorLiteral(red: 0.8235294118, green: 0.1843137255, blue: 0.1254901961, alpha: 1))
-        }
-        else {
-            return targetNode.outsideCurrentMonth ? Color.clear : Color(#colorLiteral(red: 0.133328855, green: 0.1333370209, blue: 0.1376118958, alpha: 1))
-        }
-    }
-    
     private func textColor(forNode targetNode: DayNode) -> Color {
         
         if Calendar.current.isDateInToday(targetNode.date) {
@@ -251,10 +227,12 @@ extension CalendarPickerView {
 // MARK: - Preview
 
 struct CalendarPicker_Previews: PreviewProvider {
+    
+    @State static var activeDate = Date()
+    @State static var showingSheet = true
+    
     static var previews: some View {
-        CalendarPickerView(withActiveDate: Date(), dateTappedBlock: {
-            print("Date Tapped: \($0)")
-        })
-        .previewDevice("Apple Watch Series 6 - 40mm")
+        CalendarPickerView(withActiveDate: CalendarPicker_Previews.$activeDate, showingSheet: CalendarPicker_Previews.$showingSheet)
+            .previewDevice("Apple Watch Series 6 - 40mm")
     }
 }
