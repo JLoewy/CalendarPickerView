@@ -2,6 +2,8 @@
 
 A calendar picker view primarily designed to be used on the Apple Watch in SwiftUI
 
+![Example in action](https://imgur.com/a/IGzQTcB)
+
 #Swift Package Manager
 https://github.com/JLoewy/CalendarPickerView
 
