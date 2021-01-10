@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@available(iOS 14.0, *)
 public struct CalendarPickerView: View {
     
     @Binding var showingSheet: Bool
@@ -157,7 +158,7 @@ public struct CalendarPickerView: View {
 
 // MARK: -
 // MARK: - UI Accessors
-
+@available(iOS 14.0, *)
 extension CalendarPickerView {
     
     /// Get the text color for the current DayNode. This is
@@ -179,7 +180,7 @@ extension CalendarPickerView {
 
 // MARK: -
 // MARK: - DayNode
-
+@available(iOS 14.0, *)
 extension CalendarPickerView {
     
     /// This struct models each day in the current calendar
@@ -193,7 +194,7 @@ extension CalendarPickerView {
 
 // MARK: -
 // MARK: - Date Formatters
-
+@available(iOS 14.0, *)
 extension CalendarPickerView {
     
     struct Formatter {
@@ -225,7 +226,7 @@ extension CalendarPickerView {
 
 // MARK: -
 // MARK: - Preview
-
+@available(iOS 14.0, *)
 struct CalendarPicker_Previews: PreviewProvider {
     
     @State static var activeDate = Date()
