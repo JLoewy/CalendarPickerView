@@ -7,12 +7,14 @@
 
 import SwiftUI
 
-struct CalendarPickerView: View {
+public struct CalendarPickerView: View {
     
     private let todaysDate  = Date()
     private let todaysMonth = CalendarPickerView.Formatter.month.string(from: Date())
     
     let delegate:((DayNode) -> Void)
+    
+    private let dayHeaders = ["S","M","T","W","T","F","S"]
     
     @State private var activeDate: Date
     @State private var currentMonth: String
@@ -25,56 +27,83 @@ struct CalendarPickerView: View {
         self._currentCalendar = State(initialValue: getCalendarMonth(withStartDate: activeDate))
     }
     
-    var body: some View {
+    public var body: some View {
         
-        VStack {
-            HStack {
-                Button(action: {
-                    self.traverseDate(monthDelta: -1)
-                }, label: {
-                    Image(systemName: "chevron.left.circle")
-                })
-                .buttonStyle(PlainButtonStyle())
-                
-                Spacer()
-                
-                Text(self.currentMonth)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                
-                Spacer()
-                Button(action: {
-                    self.traverseDate(monthDelta: 1)
-                }, label: {
-                    Image(systemName: "chevron.right.circle")
-                })
-                .buttonStyle(PlainButtonStyle())
-            }
-            Spacer(minLength: 8)
-            ScrollView {
+        NavigationView(content: {
+            VStack {
+                /*
+                HStack {
+                    Button(action: {
+                        self.traverseDate(monthDelta: -1)
+                    }, label: {
+                        Image(systemName: "chevron.left.circle")
+                    })
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    Spacer()
+                    
+                    Text(self.currentMonth)
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    
+                    Spacer()
+                    Button(action: {
+                        self.traverseDate(monthDelta: 1)
+                    }, label: {
+                        Image(systemName: "chevron.right.circle")
+                    })
+                    .buttonStyle(PlainButtonStyle())
+                }
+                */
+                Spacer(minLength: 8)
+
                 VStack {
                     
                     VStack{
-                        ForEach(self.currentCalendar, id: \.self) { currentRow in
-                            HStack {
-                                ForEach(currentRow, id: \.self) { currentDayNode in
-                                    Button {
-                                        self.delegate(currentDayNode)
-                                        
-                                    } label: {
-                                        Text("\(currentDayNode.day)").font(.system(size: 14, weight: .semibold, design: .rounded))
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 26, alignment: .center)
-                                    .background(background(forNode: currentDayNode).cornerRadius(13))
-                                    
-                                }
+                        HStack {
+                            ForEach (dayHeaders, id: \.self) {
+                                Text($0)
+                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                    .foregroundColor(Color.white.opacity(0.9))
+                                    .frame(minWidth: 0, maxWidth: .infinity)
                             }
-                            Spacer(minLength: 4)
                         }
-                    }
+                        Divider().background(Color.gray.opacity(0.8))
+                            .padding(.bottom, 1)
+                        ScrollView {
+                            ForEach(self.currentCalendar, id: \.self) { currentRow in
+                                HStack {
+                                    ForEach(currentRow, id: \.self) { currentDayNode in
+                                        Button {
+                                            self.delegate(currentDayNode)
+                                        } label: {
+                                            Text("\(currentDayNode.day)")
+                                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                                .foregroundColor(textColor(forNode: currentDayNode))
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 24, alignment: .center)
+                                    }
+                                }
+                                Spacer(minLength: 4)
+                            }
+                        }
+                        
+                    }.gesture(
+                        DragGesture(minimumDistance: 10)
+                            .onEnded({ (g) in
+                                
+                                if g.translation.width > 0 {
+                                    self.traverseDate(monthDelta: -1)
+                                }
+                                else {
+                                    self.traverseDate(monthDelta: 1)
+                                }
+                                print("Gesture dragged: \(g.translation.width)")
+                            })
+                    )
                 }
             }
-        }
+        }).navigationTitle(self.currentMonth)
     }
     
     // MARK: - Date Mutators
@@ -154,10 +183,20 @@ extension CalendarPickerView {
     private func background(forNode targetNode: DayNode) -> Color {
         
         if Calendar.current.isDateInToday(targetNode.date) {
-            return Color.Calendar.activeDay
+            return Color(#colorLiteral(red: 0.8235294118, green: 0.1843137255, blue: 0.1254901961, alpha: 1))
         }
         else {
             return targetNode.outsideCurrentMonth ? Color.clear : Color(#colorLiteral(red: 0.133328855, green: 0.1333370209, blue: 0.1376118958, alpha: 1))
+        }
+    }
+    
+    private func textColor(forNode targetNode: DayNode) -> Color {
+        
+        if Calendar.current.isDateInToday(targetNode.date) {
+            return Color(#colorLiteral(red: 0.8235294118, green: 0.1843137255, blue: 0.1254901961, alpha: 1))
+        }
+        else {
+            return targetNode.outsideCurrentMonth ? Color.white.opacity(0.5) : Color.white
         }
     }
 }

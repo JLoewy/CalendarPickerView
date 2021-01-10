@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "CalendarPickerView",
     platforms: [
-            .iOS(.v13)
+        .watchOS(SupportedPlatform.WatchOSVersion.v7)
         ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
@@ -25,8 +25,6 @@ let package = Package(
         .target(
             name: "CalendarPickerView",
             dependencies: []),
-        .testTarget(
-            name: "CalendarPickerViewTests",
-            dependencies: ["CalendarPickerView"]),
+
     ]
 )
