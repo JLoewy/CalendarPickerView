@@ -21,7 +21,7 @@ public struct CalendarPickerView: View {
     @State private var currentMonth: String
     @State private var currentCalendar = [[CalendarPickerView.DayNode]]()
     
-    init(withActiveDate activeDate: Binding<Date>, showingSheet: Binding<Bool>) {
+    public init(withActiveDate activeDate: Binding<Date>, showingSheet: Binding<Bool>) {
         
         self._showingSheet    = showingSheet
         self._activeDate      = activeDate
