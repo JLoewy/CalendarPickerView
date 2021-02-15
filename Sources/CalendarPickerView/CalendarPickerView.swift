@@ -22,8 +22,11 @@ public struct CalendarPickerView: View {
     @State private var currentMonth: String
     @State private var currentCalendar = [[CalendarPickerView.DayNode]]()
     
-    public init(withActiveDate activeDate: Binding<Date>, showingSheet: Binding<Bool>) {
+    var showJumpButtons: Bool
+    
+    public init(withActiveDate activeDate: Binding<Date>, showingSheet: Binding<Bool>, showJumpButtons: Bool) {
         
+        self.showJumpButtons  = showJumpButtons
         self._showingSheet    = showingSheet
         self._activeDate      = activeDate
         
@@ -74,6 +77,28 @@ public struct CalendarPickerView: View {
                                 }
                                 Spacer(minLength: 4)
                             }
+                            
+                            if showJumpButtons {
+                                VStack(spacing: 8) {
+                                    Button(action: {
+                                        self.activeDate   = Date()
+                                        self.showingSheet = false
+                                    }, label: {
+                                        Text("Go To Today")
+                                            .font(.system(size: 16, weight: .regular, design: .rounded))
+                                    })
+                                    
+                                    Button(action: {
+                                        self.showingSheet = false
+                                    }, label: {
+                                        Text("Cancel")
+                                            .font(.system(size: 16, weight: .regular, design: .rounded))
+                                    })
+                                    
+                                }.padding(.top, 16)
+                                .padding([.leading, .trailing], 8)
+                                
+                            }
                         }
                         
                     }.gesture(
@@ -90,6 +115,7 @@ public struct CalendarPickerView: View {
                             })
                     )
                 }
+                
             }
         }).navigationTitle(self.currentMonth)
     }
@@ -233,7 +259,7 @@ struct CalendarPicker_Previews: PreviewProvider {
     @State static var showingSheet = true
     
     static var previews: some View {
-        CalendarPickerView(withActiveDate: CalendarPicker_Previews.$activeDate, showingSheet: CalendarPicker_Previews.$showingSheet)
+        CalendarPickerView(withActiveDate: CalendarPicker_Previews.$activeDate, showingSheet: CalendarPicker_Previews.$showingSheet, showJumpButtons: true)
             .previewDevice("Apple Watch Series 6 - 40mm")
     }
 }
