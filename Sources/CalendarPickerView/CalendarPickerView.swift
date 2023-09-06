@@ -10,7 +10,7 @@ import SwiftUI
 
 public struct CalendarPickerView: View {
     
-    @Binding var showingSheet: Bool
+    @Binding var showCalendar: Bool
     
     private let todaysDate  = Date()
     private let todaysMonth = CalendarPickerView.Formatter.month.string(from: Date())
@@ -24,10 +24,10 @@ public struct CalendarPickerView: View {
     
     var showJumpButtons: Bool
     
-    public init(withActiveDate activeDate: Binding<Date>, showingSheet: Binding<Bool>, showJumpButtons: Bool) {
+    public init(withActiveDate activeDate: Binding<Date>, showCalendar: Binding<Bool>, showJumpButtons: Bool) {
         
         self.showJumpButtons  = showJumpButtons
-        self._showingSheet    = showingSheet
+        self._showCalendar    = showCalendar
         self._activeDate      = activeDate
         
         self._currentMonth    = State(initialValue: CalendarPickerView.Formatter.monthYear.string(from: activeDate.wrappedValue))
@@ -64,7 +64,7 @@ public struct CalendarPickerView: View {
                                         Button {
                                             // MARK: - Date Selection & Dismissal
                                             self.activeDate   = currentDayNode.date
-                                            self.showingSheet = false
+                                            self.showCalendar = false
                                         } label: {
                                             
                                             Text("\(currentDayNode.day)")
@@ -82,14 +82,14 @@ public struct CalendarPickerView: View {
                                 VStack(spacing: 8) {
                                     Button(action: {
                                         self.activeDate   = Date()
-                                        self.showingSheet = false
+                                        self.showCalendar = false
                                     }, label: {
                                         Text("Go To Today")
                                             .font(.system(size: 16, weight: .regular, design: .rounded))
                                     })
                                     
                                     Button(action: {
-                                        self.showingSheet = false
+                                        self.showCalendar = false
                                     }, label: {
                                         Text("Cancel")
                                             .font(.system(size: 16, weight: .regular, design: .rounded))
@@ -259,7 +259,11 @@ struct CalendarPicker_Previews: PreviewProvider {
     @State static var showingSheet = true
     
     static var previews: some View {
-        CalendarPickerView(withActiveDate: CalendarPicker_Previews.$activeDate, showingSheet: CalendarPicker_Previews.$showingSheet, showJumpButtons: true)
-            .previewDevice("Apple Watch Series 6 - 40mm")
+        CalendarPickerView(
+            withActiveDate: CalendarPicker_Previews.$activeDate,
+            showCalendar: CalendarPicker_Previews.$showingSheet,
+            showJumpButtons: true
+        )
+        .previewDevice("Apple Watch Series 6 - 40mm")
     }
 }
