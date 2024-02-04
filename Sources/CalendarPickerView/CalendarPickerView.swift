@@ -7,11 +7,19 @@
 
 import SwiftUI
 
+import MMCKStyler
+
 
 public struct CalendarPickerView: View {
     
+    private enum DisplayStyle {
+        case watch
+        case iOS
+    }
+    
     @Binding var showCalendar: Bool
     
+    private let styleSource: MMCKStyleSource
     private let todaysDate  = Date()
     private let todaysMonth = CalendarPickerView.Formatter.month.string(from: Date())
     
@@ -24,7 +32,18 @@ public struct CalendarPickerView: View {
     
     var showJumpButtons: Bool
     
-    public init(withActiveDate activeDate: Binding<Date>, showCalendar: Binding<Bool>, showJumpButtons: Bool) {
+    #if os(iOS)
+    private let displayStyle: DisplayStyle = .iOS
+    #else
+    private let displayStyle: DisplayStyle = .watch
+    #endif
+    
+    public init(withActiveDate activeDate: Binding<Date>, 
+                showCalendar: Binding<Bool>,
+                showJumpButtons: Bool,
+                styler: MMCKStyleSource) {
+        
+        self.styleSource = styler
         
         self.showJumpButtons  = showJumpButtons
         self._showCalendar    = showCalendar
@@ -44,34 +63,33 @@ public struct CalendarPickerView: View {
                     
                     VStack{
                         // MARK: - Day of Week Header
-                        HStack {
-                            ForEach (dayHeaders, id: \.self) {
-                                Text($0)
-                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
-                                    .foregroundColor(Color.white.opacity(0.9))
-                                    .frame(minWidth: 0, maxWidth: .infinity)
-                            }
-                        }
+                        DayOfWeekHeader(
+                            dayHeaders: self.dayHeaders,
+                            styler: styleSource
+                        )
                         
-                        Divider().background(Color.gray.opacity(0.8))
+                        Divider().background(styleSource.color(ofType: .separatorExtraDark))
                             .padding(.bottom, 1)
                         
                         ScrollView {
                             ForEach(self.currentCalendar, id: \.self) { currentRow in
                                 HStack {
                                     // MARK: - Present Each Date Button
-                                    ForEach(currentRow, id: \.self) { currentDayNode in
+                                    ForEach(currentRow) { currentDayNode in
                                         Button {
                                             // MARK: - Date Selection & Dismissal
-                                            self.activeDate   = currentDayNode.date
-                                            self.showCalendar = false
+                                            withAnimation {
+                                                self.activeDate   = currentDayNode.date
+                                                self.showCalendar = false
+                                            }
                                         } label: {
                                             
                                             Text("\(currentDayNode.day)")
-                                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                                .font(styleSource.font(.semiBold, size: 14))
                                                 .foregroundColor(textColor(forNode: currentDayNode))
+                                                .contentShape(.rect)
                                         }
-                                        .buttonStyle(PlainButtonStyle())
+                                        .buttonStyle(.plain)
                                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 24, alignment: .center)
                                     }
                                 }
@@ -85,19 +103,18 @@ public struct CalendarPickerView: View {
                                         self.showCalendar = false
                                     }, label: {
                                         Text("Go To Today")
-                                            .font(.system(size: 16, weight: .regular, design: .rounded))
+                                            .font(styleSource.font(.regular, size: 16))
                                     })
                                     
                                     Button(action: {
                                         self.showCalendar = false
                                     }, label: {
                                         Text("Cancel")
-                                            .font(.system(size: 16, weight: .regular, design: .rounded))
+                                            .font(styleSource.font(.regular, size: 16))
                                     })
                                     
                                 }.padding(.top, 16)
                                 .padding([.leading, .trailing], 8)
-                                
                             }
                         }
                         
@@ -182,7 +199,6 @@ public struct CalendarPickerView: View {
     }
 }
 
-// MARK: -
 // MARK: - UI Accessors
 
 extension CalendarPickerView {
@@ -196,10 +212,13 @@ extension CalendarPickerView {
     private func textColor(forNode targetNode: DayNode) -> Color {
         
         if Calendar.current.isDateInToday(targetNode.date) {
-            return Color(#colorLiteral(red: 0.8235294118, green: 0.1843137255, blue: 0.1254901961, alpha: 1))
+            return styleSource.color(ofType: .buttonRed)
         }
+        else if displayStyle == .watch {
+            return targetNode.outsideCurrentMonth ? styleSource.color(ofType: .textSecondary) : Color.white
+        } 
         else {
-            return targetNode.outsideCurrentMonth ? Color.white.opacity(0.5) : Color.white
+            return targetNode.outsideCurrentMonth ? styleSource.color(ofType: .textSecondary) : styleSource.color(ofType: .textPrimary)
         }
     }
 }
@@ -210,11 +229,15 @@ extension CalendarPickerView {
 extension CalendarPickerView {
     
     /// This struct models each day in the current calendar
-    struct DayNode: Hashable {
+    struct DayNode: Hashable, Identifiable {
         let date: Date
         let day: Int
         
         let outsideCurrentMonth: Bool
+        
+        var id: Date {
+            self.date
+        }
     }
 }
 
@@ -249,21 +272,32 @@ extension CalendarPickerView {
     }
 }
 
+// MARK: - DayOfWeekHeader
 
-// MARK: -
+private struct DayOfWeekHeader: View {
+    
+    let dayHeaders: [String]
+    let styler: MMCKStyleSource
+    
+    var body: some View {
+        HStack {
+            ForEach (dayHeaders, id: \.self) {
+                Text($0)
+                    .font(styler.font(.semiBold, size: 12))
+                    .foregroundColor(Color.white.opacity(0.9))
+                    .frame(minWidth: 0, maxWidth: .infinity)
+            }
+        }
+    }
+}
+
 // MARK: - Preview
 
-struct CalendarPicker_Previews: PreviewProvider {
-    
-    @State static var activeDate = Date()
-    @State static var showingSheet = true
-    
-    static var previews: some View {
-        CalendarPickerView(
-            withActiveDate: CalendarPicker_Previews.$activeDate,
-            showCalendar: CalendarPicker_Previews.$showingSheet,
-            showJumpButtons: true
-        )
-        .previewDevice("Apple Watch Series 6 - 40mm")
-    }
+#Preview {
+    CalendarPickerView(
+        withActiveDate: .constant(Date()),
+        showCalendar: .constant(true),
+        showJumpButtons: true,
+        styler: MMCKStyler.MMCKDefaultStyler()
+    )
 }

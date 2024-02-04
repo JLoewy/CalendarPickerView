@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "mmckstyler",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/JLoewy/MMCKStyler",
+      "state" : {
+        "revision" : "88c358e3e9b2d9380ef9355bdd8cdacaf32e08fe",
+        "version" : "3.0.1"
+      }
+    }
+  ],
+  "version" : 2
+}
