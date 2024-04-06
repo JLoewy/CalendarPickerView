@@ -32,7 +32,7 @@ public struct CalendarPickerView: View {
     
     var showJumpButtons: Bool
     
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     private let displayStyle: DisplayStyle = .iOS
     #else
     private let displayStyle: DisplayStyle = .watch
