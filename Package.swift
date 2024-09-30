@@ -18,7 +18,7 @@ let package = Package(
             targets: ["CalendarPickerView"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/JLoewy/MMCKStyler", from: "3.0.0")
+        .package(url: "https://github.com/JLoewy/MMCKStyler", branch: "master")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
